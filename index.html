@@ -250,8 +250,50 @@
   .assume-box li { margin: 3px 0; }
 
   /* signature block */
-  .sig-grid { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 26px; margin-top: 24px; }
+  .sig-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 26px; margin-top: 24px; }
   .sig-line { border-top: 1.5px solid var(--navy); padding-top: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; color: var(--navy); text-transform: uppercase; }
+
+  /* signature pad */
+  .sig-toggle { display: inline-flex; gap: 4px; background: #eef1f5; border-radius: 7px; padding: 3px; margin-bottom: 12px; }
+  .sig-tab {
+    background: transparent; border: none; padding: 7px 16px; border-radius: 5px;
+    font: inherit; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer;
+  }
+  .sig-tab.active { background: #fff; color: var(--navy); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+
+  .sig-pad-wrap {
+    position: relative;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: #fcfcfd;
+    height: 150px;
+    overflow: hidden;
+  }
+  .sig-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+  .sig-placeholder {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    color: #b8bfc8; font-size: 15px; pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sig-clear {
+    position: absolute; top: 8px; right: 8px;
+    background: #fff; border: 1px solid var(--line); border-radius: 5px;
+    padding: 5px 12px; font: inherit; font-size: 12px; font-weight: 700; color: var(--navy); cursor: pointer;
+  }
+  .sig-clear:hover { border-color: var(--orange); color: var(--orange); }
+
+  .sig-type-wrap {
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: #fcfcfd;
+    height: 150px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sig-type-input {
+    border: none !important; background: transparent; text-align: center;
+    font-family: "Brush Script MT", "Segoe Script", "Bradley Hand", cursive;
+    font-size: 46px; color: var(--ink); width: 90%;
+  }
+  .sig-type-input:focus { outline: none; }
 
   /* action bar */
   .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 40px; padding-top: 24px; border-top: 2px solid var(--line); }
@@ -286,6 +328,8 @@
     .actions, .save-hint { display: none; }
     .opt:hover, .opt { border-color: var(--line); }
     .section-band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sig-toggle, .sig-clear { display: none !important; }
+    .sig-canvas { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
 </head>
@@ -621,8 +665,27 @@
 
   <div class="q">
     <h4>Client Signature</h4>
-    <div class="sig-grid">
-      <div><input type="text" name="sig_signature"><div class="sig-line">Signature</div></div>
+
+    <div class="sig-toggle">
+      <button type="button" class="sig-tab active" data-mode="draw">Draw signature</button>
+      <button type="button" class="sig-tab" data-mode="type">Type signature</button>
+    </div>
+
+    <!-- Draw mode -->
+    <div id="sigDraw" class="sig-pad-wrap">
+      <canvas id="sigCanvas" class="sig-canvas"></canvas>
+      <span id="sigPlaceholder" class="sig-placeholder">Sign here</span>
+      <button type="button" class="sig-clear" onclick="clearSignature()">Clear</button>
+    </div>
+
+    <!-- Type mode -->
+    <div id="sigType" class="sig-type-wrap" style="display:none;">
+      <input type="text" id="sigTypeInput" class="sig-type-input" placeholder="Type your name">
+    </div>
+
+    <div class="sig-line" style="margin-top:6px;">Signature</div>
+
+    <div class="sig-grid" style="margin-top:24px;">
       <div><input type="text" name="sig_name"><div class="sig-line">Printed Name</div></div>
       <div><input type="date" name="sig_date"><div class="sig-line">Date</div></div>
     </div>
@@ -651,6 +714,83 @@
     }
     input.addEventListener('change', sync);
   });
+
+  // ---- Signature pad ----
+  (function(){
+    var canvas = document.getElementById('sigCanvas');
+    var placeholder = document.getElementById('sigPlaceholder');
+    var ctx = canvas.getContext('2d');
+    var drawing = false, hasDrawn = false, last = null;
+
+    // size canvas to its displayed size (for crisp lines on retina)
+    function fitCanvas(){
+      var rect = canvas.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      // preserve existing drawing
+      var prev = hasDrawn ? canvas.toDataURL() : null;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = '#1f2937';
+      if(prev){
+        var img = new Image();
+        img.onload = function(){ ctx.drawImage(img, 0, 0, rect.width, rect.height); };
+        img.src = prev;
+      }
+    }
+    setTimeout(fitCanvas, 50);
+    window.addEventListener('resize', fitCanvas);
+
+    function pos(e){
+      var rect = canvas.getBoundingClientRect();
+      var p = e.touches ? e.touches[0] : e;
+      return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+    }
+    function start(e){
+      drawing = true; last = pos(e);
+      if(!hasDrawn){ hasDrawn = true; placeholder.style.display = 'none'; }
+      e.preventDefault();
+    }
+    function move(e){
+      if(!drawing) return;
+      var p = pos(e);
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      last = p;
+      e.preventDefault();
+    }
+    function end(){ drawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, {passive:false});
+    canvas.addEventListener('touchmove', move, {passive:false});
+    canvas.addEventListener('touchend', end);
+
+    window.clearSignature = function(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasDrawn = false;
+      placeholder.style.display = '';
+    };
+
+    // toggle draw / type
+    document.querySelectorAll('.sig-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        document.querySelectorAll('.sig-tab').forEach(function(t){ t.classList.remove('active'); });
+        tab.classList.add('active');
+        var mode = tab.getAttribute('data-mode');
+        document.getElementById('sigDraw').style.display  = mode === 'draw' ? '' : 'none';
+        document.getElementById('sigType').style.display  = mode === 'type' ? 'flex' : 'none';
+        if(mode === 'draw') setTimeout(fitCanvas, 30);
+      });
+    });
+  })();
 </script>
 </body>
 </html>
