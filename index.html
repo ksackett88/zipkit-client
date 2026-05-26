@@ -1,1 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Intake · Panel Kit Project</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --navy-dark: #16263d;
+    --orange: #e8743b;
+    --orange-soft: #fdf0e8;
+    --peach: #f5d9c0;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #d8dde4;
+    --bg: #f4f6f9;
+    --panel: #ffffff;
+    --light-blue: #eef2f8;
+    --note-orange: #fff6ef;
+  }
 
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-size: 15px;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 16px 80px;
+  }
+
+  /* ---- Header / hero ---- */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 0 14px;
+    border-bottom: 2px solid var(--navy);
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .logo {
+    height: 46px;
+    width: auto;
+    display: block;
+  }
+  .crumb {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--navy);
+  }
+
+  .hero {
+    background: var(--peach);
+    border-radius: 6px;
+    padding: 34px 36px;
+    margin-bottom: 28px;
+  }
+  .hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 12px;
+    color: var(--navy-dark);
+    margin-bottom: 8px;
+  }
+  .hero h1 {
+    margin: 0 0 6px;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -1px;
+  }
+  .hero .sub { font-size: 17px; color: #3d4a5c; }
+
+  .intro { color: #44505f; margin-bottom: 26px; }
+  .intro strong { color: var(--navy); }
+
+  /* ---- Two callout columns ---- */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+  .callout {
+    border-radius: 6px;
+    padding: 18px 20px;
+  }
+  .callout.redline { background: var(--light-blue); border-left: 4px solid var(--navy); }
+  .callout.skip { background: #f1f2f4; border-left: 4px solid #9aa3ad; }
+  .callout h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--navy);
+  }
+  .callout .note { font-style: italic; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .callout ul { margin: 0; padding-left: 18px; }
+  .callout li { margin: 3px 0; font-size: 14px; }
+
+  .info-block {
+    background: var(--light-blue);
+    border-left: 4px solid var(--navy);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+  }
+  .info-block h3 {
+    margin: 0 0 6px;
+    font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--navy);
+  }
+  .info-block ol { margin: 0; padding-left: 20px; }
+  .info-block li { margin: 4px 0; }
+
+  /* ---- Section headers ---- */
+  .section-band {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 5px;
+    padding: 14px 22px;
+    margin: 38px 0 22px;
+  }
+  .section-band .num { font-size: 11px; letter-spacing: 2px; opacity: 0.75; text-transform: uppercase; }
+  .section-band h2 { margin: 2px 0 0; font-size: 21px; letter-spacing: 0.5px; }
+
+  .section-desc { font-style: italic; color: var(--muted); margin: -8px 0 22px; font-size: 14px; }
+
+  /* ---- Question groups ---- */
+  .q { margin-bottom: 26px; }
+  .q > h4 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 6px;
+  }
+
+  label.fld { display: block; margin-bottom: 14px; }
+  label.fld .lbl {
+    display: block;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 13px;
+    letter-spacing: 0.4px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid var(--line);
+    background: transparent;
+    padding: 7px 2px;
+    font: inherit;
+    color: var(--ink);
+    transition: border-color .15s;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-bottom-color: var(--orange);
+  }
+  textarea { resize: vertical; min-height: 54px; border: 1.5px solid var(--line); border-radius: 4px; padding: 8px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 30px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ---- Option boxes (checkbox / radio cards) ---- */
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .opt:hover { border-color: var(--orange); }
+  .opt input { margin: 3px 0 0; width: 17px; height: 17px; accent-color: var(--orange); flex: none; cursor: pointer; }
+  .opt .otitle { font-weight: 700; color: var(--navy); }
+  .opt .odesc { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; font-weight: 400; }
+  .opt.checked-style { border-color: var(--orange); background: var(--orange-soft); }
+
+  .opt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .opt-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .opt-grid .opt, .opt-grid-2 .opt { margin-bottom: 0; }
+
+  /* inline radio row */
+  .inline-opts { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-bottom: 6px; }
+  .inline-opts label { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+  .inline-opts input { width: 17px; height: 17px; accent-color: var(--orange); cursor: pointer; }
+
+  /* acknowledgement / upcharge notes */
+  .note-box {
+    background: var(--note-orange);
+    border: 1px solid #f0c9a8;
+    border-left: 4px solid var(--orange);
+    border-radius: 5px;
+    padding: 11px 14px;
+    font-size: 13.5px;
+    color: #5a4633;
+    margin-bottom: 12px;
+  }
+  .note-box strong { color: var(--orange); }
+  .coord-box {
+    background: var(--light-blue);
+    border-left: 4px solid var(--navy);
+    border-radius: 5px;
+    padding: 11px 14px;
+    font-size: 13.5px;
+    color: #3d4a5c;
+    margin-bottom: 14px;
+  }
+  .coord-box strong { color: var(--navy); }
+
+  .ack-opt {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--note-orange);
+    border: 1px solid #f0c9a8;
+    border-radius: 5px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .ack-opt input { margin-top: 2px; width: 18px; height: 18px; accent-color: var(--orange); flex: none; cursor: pointer; }
+
+  .assume-box { background: var(--light-blue); border-left: 4px solid var(--navy); border-radius: 5px; padding: 14px 20px; margin-bottom: 12px; }
+  .assume-box ul { margin: 6px 0 0; padding-left: 20px; }
+  .assume-box li { margin: 3px 0; }
+
+  /* signature block */
+  .sig-grid { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 26px; margin-top: 24px; }
+  .sig-line { border-top: 1.5px solid var(--navy); padding-top: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; color: var(--navy); text-transform: uppercase; }
+
+  /* action bar */
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 40px; padding-top: 24px; border-top: 2px solid var(--line); }
+  button {
+    font: inherit;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 12px 26px;
+    border: none;
+    cursor: pointer;
+    transition: transform .1s, opacity .15s;
+  }
+  button:active { transform: translateY(1px); }
+  .btn-primary { background: var(--orange); color: #fff; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-secondary { background: var(--navy); color: #fff; }
+  .btn-secondary:hover { opacity: .9; }
+  .btn-ghost { background: #fff; color: var(--navy); border: 1.5px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--navy); }
+
+  .save-hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  @media (max-width: 680px) {
+    .cols, .grid2, .grid3, .opt-grid, .opt-grid-2, .sig-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 32px; }
+    .hero { padding: 24px; }
+  }
+
+  /* print */
+  @media print {
+    body { background: #fff; }
+    .actions, .save-hint { display: none; }
+    .opt:hover, .opt { border-color: var(--line); }
+    .section-band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <img class="logo" src="data:image/png;base64,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" alt="Zip Kit Homes">
+    <div class="crumb">Design Intake · Panel Kit Project</div>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">Welcome to the design phase</div>
+    <h1>Design Intake</h1>
+    <div class="sub">Panel Kit Project — Checklist &amp; Plan Review</div>
+  </div>
+
+  <p class="intro">This packet includes a <strong>Design Intake Checklist</strong> and <strong>standard Zip Kit plans</strong> for you to review and mark up. Together, these help our design team understand your priorities before design work begins.</p>
+
+  <div class="cols">
+    <div class="callout redline">
+      <h3>Redline the Plans</h3>
+      <div class="note">Focus on layout and structure.</div>
+      <ul>
+        <li>Room layout and sizes</li>
+        <li>Bedroom / bathroom count</li>
+        <li>Ceiling heights or vaults</li>
+        <li>Garage or basement intent</li>
+        <li>Window and door locations (concept-level)</li>
+      </ul>
+    </div>
+    <div class="callout skip">
+      <h3>Skip for Now</h3>
+      <div class="note">Handled later in selections phase.</div>
+      <ul>
+        <li>Flooring</li>
+        <li>Cabinets</li>
+        <li>Paint, tile, or décor</li>
+        <li>Furniture placement</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-block">
+    <h3>What to Do</h3>
+    <ol>
+      <li>Complete the Design Intake Checklist in full. Missing information may delay the start of design.</li>
+      <li>Mark up the included plans to show what you like, what you want changed, and what doesn't work for you.</li>
+    </ol>
+  </div>
+
+  <div class="info-block">
+    <h3>Next Steps</h3>
+    <p style="margin:0;">Design begins once we receive your completed checklist and redlined plans. Our team will review your input and contact you with the next steps. Clear input now keeps your design moving smoothly.</p>
+  </div>
+
+  <form id="intakeForm">
+
+  <!-- ============ SECTION 1 ============ -->
+  <div class="section-band"><div class="num">Section 1</div><h2>Client &amp; Project Information</h2></div>
+  <p class="section-desc">This checklist must be completed in full before design work begins. Design timelines, pricing alignment, and deliverables depend on complete and accurate information.</p>
+
+  <div class="q">
+    <h4>Client Information</h4>
+    <div class="grid2">
+      <label class="fld"><span class="lbl">Client Name(s)</span><input type="text" name="client_name"></label>
+      <label class="fld"><span class="lbl">Project Location</span><input type="text" name="project_location"></label>
+      <label class="fld"><span class="lbl">Email</span><input type="email" name="email"></label>
+      <label class="fld"><span class="lbl">APN / Parcel #</span><input type="text" name="apn"></label>
+      <label class="fld"><span class="lbl">Phone</span><input type="tel" name="phone"></label>
+      <label class="fld"><span class="lbl">HOA</span><input type="text" name="hoa"></label>
+    </div>
+    <div style="margin-top:6px;">
+      <span class="lbl">HOA submittal required?</span>
+      <div class="inline-opts">
+        <label><input type="radio" name="hoa_required" value="Yes"> Yes</label>
+        <label><input type="radio" name="hoa_required" value="No"> No</label>
+        <label><input type="checkbox" name="hoa_docs"> HOA documents provided (if applicable)</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="q">
+    <h4>1. Project Type — Select One</h4>
+    <div class="opt-grid">
+      <label class="opt"><input type="radio" name="project_type" value="Primary Residence"><span class="otitle">Primary Residence</span></label>
+      <label class="opt"><input type="radio" name="project_type" value="ADU"><span class="otitle">ADU</span></label>
+      <label class="opt"><input type="radio" name="project_type" value="Vacation / STR"><span class="otitle">Vacation / STR</span></label>
+      <label class="opt"><input type="radio" name="project_type" value="Multi-Family"><span class="otitle">Multi-Family</span></label>
+      <label class="opt"><input type="radio" name="project_type" value="Investment / Dev"><span class="otitle">Investment / Dev</span></label>
+      <label class="opt"><input type="radio" name="project_type" value="Other"><span class="otitle">Other</span></label>
+    </div>
+    <label class="fld" style="margin-top:10px;"><span class="lbl">If Other</span><input type="text" name="project_type_other"></label>
+  </div>
+
+  <div class="q">
+    <h4>2. Floor Plan Direction</h4>
+    <div class="note-box"><strong>UPCHARGES:</strong> Custom layouts require additional design fees over an existing Zip Kit plan. Modifications to a Zip Kit plan (wall moves, window relocations, bumpouts) are typically billed at an intermediate rate.</div>
+    <label class="opt"><input type="radio" name="plan_direction" value="Existing Zip Kit Plan"><span><span class="otitle">Existing Zip Kit Plan</span><span class="odesc">Plan name / number below</span></span></label>
+    <label class="opt"><input type="radio" name="plan_direction" value="Existing with Modifications"><span><span class="otitle">Existing Zip Kit Plan with Modifications</span><span class="odesc">Note changes on redlined plans and describe scope below</span></span></label>
+    <label class="opt"><input type="radio" name="plan_direction" value="Fully Custom Layout"><span><span class="otitle">Fully Custom Layout</span><span class="odesc">Additional design fees apply · provide concept sketches or reference images</span></span></label>
+    <label class="fld" style="margin-top:10px;"><span class="lbl">Plan Name / #</span><input type="text" name="plan_name"></label>
+    <label class="fld"><span class="lbl">Notes</span><textarea name="plan_notes"></textarea></label>
+  </div>
+
+  <div class="q">
+    <h4>3. Size &amp; Layout Parameters</h4>
+    <div class="grid3">
+      <label class="fld"><span class="lbl">Approx Sq Ft</span><input type="text" name="sqft"></label>
+      <label class="fld"><span class="lbl">Bedrooms</span><input type="text" name="bedrooms"></label>
+      <label class="fld"><span class="lbl">Bathrooms</span><input type="text" name="bathrooms"></label>
+    </div>
+    <div style="margin-top:6px;">
+      <span class="lbl">Stories</span>
+      <div class="inline-opts">
+        <label><input type="radio" name="stories" value="1"> 1</label>
+        <label><input type="radio" name="stories" value="2"> 2</label>
+        <label><input type="radio" name="stories" value="3"> 3</label>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <span class="lbl">Basement <span style="font-weight:400;text-transform:none;color:var(--muted);">(site-built by GC; Zip Kit designs to interface)</span></span>
+      <div class="inline-opts">
+        <label><input type="radio" name="basement" value="No"> No</label>
+        <label><input type="radio" name="basement" value="Yes"> Yes</label>
+        <label><input type="checkbox" name="walkout"> Walkout (site dependent)</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="q">
+    <h4>4. Site Conditions — Client-Provided</h4>
+    <div class="coord-box"><strong>FOR COORDINATION:</strong> Zip Kit designs panel kits to match your site. Accurate site info up front prevents redesign later. Final feasibility is subject to engineering review and local jurisdiction requirements.</div>
+    <label class="opt"><input type="checkbox" name="site_plan_attached"><span class="otitle">Site plan, survey, or parcel map attached</span></label>
+    <label class="opt"><input type="checkbox" name="lot_photos_attached"><span class="otitle">Photos of lot and access road attached</span></label>
+    <div style="margin-top:10px;">
+      <span class="lbl">Sloped Lot?</span>
+      <div class="inline-opts">
+        <label><input type="radio" name="sloped" value="Yes"> Yes</label>
+        <label><input type="radio" name="sloped" value="No"> No</label>
+      </div>
+    </div>
+    <label class="fld" style="margin-top:8px;"><span class="lbl">Snow load / wind</span><input type="text" name="snow_wind"></label>
+  </div>
+
+  <div class="q">
+    <h4>5. Utilities &amp; Infrastructure</h4>
+    <div class="coord-box"><strong>FOR COORDINATION:</strong> Utility availability affects panel layout, service entries, and mechanical chase placement. Installation is handled by your GC and licensed trades.</div>
+    <div class="opt-grid">
+      <label class="opt"><input type="checkbox" name="util_power"><span class="otitle">Power at site</span></label>
+      <label class="opt"><input type="checkbox" name="util_gas"><span class="otitle">Gas at site</span></label>
+      <label class="opt"><input type="checkbox" name="util_municipal_water"><span class="otitle">Municipal water</span></label>
+      <label class="opt"><input type="checkbox" name="util_well"><span class="otitle">Well (existing / planned)</span></label>
+      <label class="opt"><input type="checkbox" name="util_sewer"><span class="otitle">Sewer</span></label>
+      <label class="opt"><input type="checkbox" name="util_septic"><span class="otitle">Septic (existing / planned)</span></label>
+    </div>
+    <label class="opt" style="margin-top:8px;"><input type="checkbox" name="util_unknown"><span class="otitle">Unknown / to be verified</span></label>
+    <label class="ack-opt"><input type="checkbox" name="ack_utility">Client acknowledges utility availability may impact design, timeline, cost, and feasibility.</label>
+  </div>
+
+  <div class="q">
+    <h4>6. Structural &amp; Ceiling Preferences</h4>
+    <span class="lbl">Main Floor Ceiling Height</span>
+    <div class="inline-opts">
+      <label><input type="radio" name="ceiling_height" value="9"> 9'</label>
+      <label><input type="radio" name="ceiling_height" value="10"> 10'</label>
+      <label><input type="radio" name="ceiling_height" value="Other"> Other (note below)</label>
+    </div>
+    <label class="fld" style="margin-top:8px;"><span class="lbl">Vaulted ceiling areas</span><input type="text" name="vaulted"></label>
+    <label class="opt"><input type="checkbox" name="high_snow_wind"><span class="otitle">High snow load / high wind considerations</span></label>
+    <label class="fld" style="margin-top:8px;"><span class="lbl">Required snow load (PSF)</span><input type="text" name="snow_psf"></label>
+  </div>
+
+  <div class="q">
+    <h4>7. Exterior Design Direction — Concept Level</h4>
+    <p class="section-desc" style="margin-top:0;">Direction is required to begin design; selections may evolve and will be finalized during the selections phase.</p>
+    <label class="fld"><span class="lbl">Exterior siding</span><input type="text" name="siding"></label>
+    <label class="fld"><span class="lbl">Roof material</span><input type="text" name="roof"></label>
+    <label class="fld"><span class="lbl">Window style</span><input type="text" name="window_style"></label>
+    <div style="margin-top:4px;">
+      <span class="lbl">Door Height</span>
+      <div class="inline-opts">
+        <label><input type="radio" name="door_height" value="6'8&quot;"> 6'8" (standard)</label>
+        <label><input type="radio" name="door_height" value="8'0&quot;"> 8'0"</label>
+        <label><input type="radio" name="door_height" value="Other"> Other</label>
+        <input type="text" name="door_height_other" style="max-width:200px;" placeholder="specify">
+      </div>
+    </div>
+    <label class="fld" style="margin-top:10px;"><span class="lbl">Exterior aesthetic</span><input type="text" name="aesthetic" placeholder="e.g., modern, mountain, farmhouse, traditional"></label>
+  </div>
+
+  <div class="q">
+    <h4>8. Fenestration &amp; Openings</h4>
+    <label class="opt"><input type="checkbox" name="fen_standard"><span class="otitle">Standard window sizing and placements</span></label>
+    <label class="opt"><input type="checkbox" name="fen_large"><span class="otitle">Large openings (sliders, multi-panel doors, floor-to-ceiling glass)</span></label>
+    <label class="opt"><input type="checkbox" name="fen_egress"><span class="otitle">Egress windows required (basement / bedrooms)</span></label>
+    <label class="ack-opt"><input type="checkbox" name="ack_openings">Client acknowledges large openings may impact structural design and cost.</label>
+  </div>
+
+  <div class="q">
+    <h4>9. Special Conditions</h4>
+    <div class="opt-grid-2">
+      <label class="opt"><input type="checkbox" name="va_req"><span class="otitle">VA Requirements</span></label>
+      <label class="opt"><input type="checkbox" name="accessibility"><span class="otitle">Accessibility / aging-in-place</span></label>
+    </div>
+    <label class="fld" style="margin-top:10px;"><span class="lbl">Notes</span><textarea name="special_notes"></textarea></label>
+  </div>
+
+  <div class="q">
+    <h4>10. Garage &amp; Ancillary Structures</h4>
+    <div class="coord-box"><strong>FOR COORDINATION:</strong> Garages are typically site-built by the GC. Zip Kit designs the panel kit to interface cleanly with attached garages.</div>
+    <div class="opt-grid">
+      <label class="opt"><input type="radio" name="garage" value="No garage"><span class="otitle">No garage</span></label>
+      <label class="opt"><input type="radio" name="garage" value="Attached"><span class="otitle">Attached garage</span></label>
+      <label class="opt"><input type="radio" name="garage" value="Detached"><span class="otitle">Detached garage</span></label>
+      <label class="opt"><input type="radio" name="garage" value="Carport"><span class="otitle">Carport</span></label>
+      <label class="opt"><input type="radio" name="garage" value="Future"><span class="otitle">Future garage planned</span></label>
+    </div>
+  </div>
+
+  <div class="q">
+    <h4>11. Fireplace / Stove Intent</h4>
+    <div class="opt-grid-2">
+      <label class="opt"><input type="radio" name="fireplace" value="None"><span class="otitle">None</span></label>
+      <label class="opt"><input type="radio" name="fireplace" value="Gas fireplace"><span class="otitle">Gas fireplace</span></label>
+      <label class="opt"><input type="radio" name="fireplace" value="Wood-burning stove"><span class="otitle">Wood-burning stove</span></label>
+      <label class="opt"><input type="radio" name="fireplace" value="Electric / decorative"><span class="otitle">Electric / decorative</span></label>
+    </div>
+    <label class="ack-opt"><input type="checkbox" name="ack_fireplace">Client acknowledges chimneys, flues, and roof penetrations affect design and cost.</label>
+  </div>
+
+  <!-- ============ SECTION 2 ============ -->
+  <div class="section-band"><div class="num">Section 2</div><h2>Building Systems &amp; Coordination</h2></div>
+
+  <div class="q">
+    <h4>12. Building Envelope — Required</h4>
+    <div class="note-box"><strong>UPCHARGES:</strong> Continuously Insulated (CI) System is an upgrade over Standard Sheathing — adds material cost, detailing, and coordination complexity, but significantly improves energy performance.</div>
+    <label class="opt"><input type="radio" name="envelope" value="Standard Sheathing"><span><span class="otitle">Standard Sheathing System</span><span class="odesc">Traditional code-compliant wall assembly · standard panel kit spec</span></span></label>
+    <label class="opt"><input type="radio" name="envelope" value="CI System"><span><span class="otitle">Continuously Insulated Wrapped House (CI System)</span><span class="odesc">Continuous exterior insulation for improved energy performance · upgrade</span></span></label>
+    <label class="ack-opt"><input type="checkbox" name="ack_envelope">Client acknowledges CI selection may impact wall thickness, window detailing, pricing, and construction coordination.</label>
+  </div>
+
+  <div class="q">
+    <h4>13. Domestic Hot Water System Preference</h4>
+    <div class="coord-box"><strong>FOR COORDINATION:</strong> Water heater is installed by your GC. Zip Kit needs to know the type to size and locate mechanical space on the panel kit.</div>
+    <label class="opt"><input type="radio" name="hot_water" value="Tank"><span><span class="otitle">Traditional tank water heater</span><span class="odesc">Standard assumption if undecided</span></span></label>
+    <label class="opt"><input type="radio" name="hot_water" value="Tankless"><span><span class="otitle">Tankless (on-demand) water heater</span><span class="odesc">Smaller mechanical footprint; higher gas/electric demand</span></span></label>
+    <label class="opt"><input type="radio" name="hot_water" value="Undecided"><span><span class="otitle">Undecided</span><span class="odesc">Design will assume standard tank</span></span></label>
+    <label class="ack-opt"><input type="checkbox" name="ack_hotwater">Client acknowledges selection may impact mechanical space, electrical/gas demand, and cost.</label>
+  </div>
+
+  <div class="q">
+    <h4>14. Primary Heating &amp; Cooling System — Required</h4>
+    <div class="coord-box"><strong>FOR COORDINATION:</strong> Zip Kit does not design or supply HVAC. Final equipment selection is by a licensed mechanical contractor. However, HVAC approach affects framing, soffits, chases, and ceiling design — early selection is required for design coordination.</div>
+    <label class="opt"><input type="radio" name="hvac" value="Mini-Split"><span><span class="otitle">Ductless Mini-Split System</span><span class="odesc">Wall-mounted or concealed heads · minimal ducting · impacts wall placement and exterior penetrations</span></span></label>
+    <label class="opt"><input type="radio" name="hvac" value="Ducted Furnace"><span><span class="otitle">Ducted Furnace System</span><span class="odesc">Central furnace with ductwork · requires mechanical chases, soffits, and floor/ceiling cavities</span></span></label>
+    <label class="opt"><input type="radio" name="hvac" value="Hybrid"><span><span class="otitle">Hybrid System</span><span class="odesc">Describe below</span></span></label>
+    <label class="opt"><input type="radio" name="hvac" value="Undecided"><span><span class="otitle">Undecided</span><span class="odesc">Design will assume ducted furnace</span></span></label>
+    <label class="fld" style="margin-top:10px;"><span class="lbl">If Hybrid, describe</span><input type="text" name="hvac_hybrid"></label>
+    <label class="ack-opt"><input type="checkbox" name="ack_hvac1">HVAC selection affects framing layout, floor systems, ceiling design, soffits, and mechanical space allocation.</label>
+    <label class="ack-opt"><input type="checkbox" name="ack_hvac2">Final HVAC design and equipment selection must be completed by licensed mechanical contractors.</label>
+    <label class="ack-opt"><input type="checkbox" name="ack_hvac3">Changes to HVAC approach after design initiation may require plan revisions and additional fees.</label>
+  </div>
+
+  <!-- ============ SECTION 3 ============ -->
+  <div class="section-band"><div class="num">Section 3</div><h2>Project Parameters</h2></div>
+
+  <div class="q">
+    <h4>15. Budget Parameters</h4>
+    <div class="grid2">
+      <label class="fld"><span class="lbl">Panel kit only ($)</span><input type="text" name="budget_kit"></label>
+      <label class="fld"><span class="lbl">Full construction ($)</span><input type="text" name="budget_full"></label>
+    </div>
+    <div style="margin-top:6px;">
+      <span class="lbl">Flexibility Level</span>
+      <div class="inline-opts">
+        <label><input type="radio" name="flexibility" value="Tight"> Tight</label>
+        <label><input type="radio" name="flexibility" value="Moderate"> Moderate</label>
+        <label><input type="radio" name="flexibility" value="Flexible"> Flexible</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="q">
+    <h4>16. Timeline &amp; Permitting</h4>
+    <label class="fld"><span class="lbl">Ideal start window</span><input type="text" name="start_window"></label>
+    <div style="margin-top:6px;">
+      <span class="lbl">Permit Status</span>
+      <div class="inline-opts">
+        <label><input type="radio" name="permit" value="Not started"> Not started</label>
+        <label><input type="radio" name="permit" value="In progress"> In progress</label>
+        <label><input type="radio" name="permit" value="Approved"> Approved</label>
+      </div>
+    </div>
+    <label class="ack-opt"><input type="checkbox" name="ack_permit">Client acknowledges engineered, stamped plans from Zip Kit Homes are required prior to permit submission.</label>
+  </div>
+
+  <div class="q">
+    <h4>17. Builder Path</h4>
+    <label class="opt"><input type="radio" name="builder" value="Builder selected"><span class="otitle">Builder selected</span></label>
+    <label class="opt"><input type="radio" name="builder" value="Client as GC"><span class="otitle">Client acting as General Contractor</span></label>
+    <label class="opt"><input type="radio" name="builder" value="Not yet selected"><span class="otitle">Builder not yet selected</span></label>
+  </div>
+
+  <div class="q">
+    <h4>18. Design Assumption Defaults</h4>
+    <div class="assume-box">
+      If selections are left undecided, Zip Kit Homes will proceed with the following reasonable, code-compliant assumptions for your panel kit design:
+      <ul>
+        <li>Standard sheathing system (not CI)</li>
+        <li>Standard ceiling heights (9')</li>
+        <li>Standard window sizing and placements</li>
+        <li>No fireplace</li>
+        <li>No garage</li>
+        <li>Standard tank water heater</li>
+        <li>Ducted furnace HVAC system</li>
+      </ul>
+    </div>
+    <label class="ack-opt"><input type="checkbox" name="ack_assumptions">Client acknowledges and accepts these assumptions as the baseline where selections are left undecided.</label>
+  </div>
+
+  <!-- ============ SECTION 4 ============ -->
+  <div class="section-band"><div class="num">Section 4</div><h2>Acknowledgements &amp; Signature</h2></div>
+
+  <div class="q">
+    <h4>19. Client Acknowledgements</h4>
+    <p class="section-desc" style="margin-top:0;">Please check each acknowledgement below to confirm understanding.</p>
+    <label class="ack-opt"><input type="checkbox" name="ack_mep">Zip Kit Homes provides stamped engineered structural plans and construction documents only and <strong>does not provide stamped MEP plans</strong>. MEP (mechanical, electrical, plumbing) plans must be prepared and submitted by licensed trades in the project jurisdiction. Zip Kit Homes may provide blank background drawings for MEP coordination.</label>
+    <label class="ack-opt"><input type="checkbox" name="ack_revisions">Design revisions, scope changes, or delayed information may impact cost, timeline, and require additional fees.</label>
+    <label class="ack-opt"><input type="checkbox" name="ack_incomplete">Incomplete or delayed information will pause the design process.</label>
+    <label class="ack-opt"><input type="checkbox" name="ack_assembly">Panel kits are shipped as a pre-engineered structural assembly. Site work, foundation, MEP rough-in, finishes, and final assembly coordination are the responsibility of the client and General Contractor.</label>
+  </div>
+
+  <div class="q">
+    <h4>Client Signature</h4>
+    <div class="sig-grid">
+      <div><input type="text" name="sig_signature"><div class="sig-line">Signature</div></div>
+      <div><input type="text" name="sig_name"><div class="sig-line">Printed Name</div></div>
+      <div><input type="date" name="sig_date"><div class="sig-line">Date</div></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn-primary" onclick="window.print()">Print / Save as PDF</button>
+    <button type="button" class="btn-ghost" onclick="if(confirm('Clear all fields?')) document.getElementById('intakeForm').reset()">Clear Form</button>
+  </div>
+  <div class="save-hint">Tip: Use "Print / Save as PDF" to generate a completed copy to email back.</div>
+
+  </form>
+</div>
+
+<script>
+  // Highlight selected option cards
+  document.querySelectorAll('.opt input').forEach(function(input){
+    function sync(){
+      if(input.type === 'radio'){
+        document.querySelectorAll('input[name="'+input.name+'"]').forEach(function(r){
+          r.closest('.opt')?.classList.toggle('checked-style', r.checked);
+        });
+      } else {
+        input.closest('.opt')?.classList.toggle('checked-style', input.checked);
+      }
+    }
+    input.addEventListener('change', sync);
+  });
+</script>
+</body>
+</html>
