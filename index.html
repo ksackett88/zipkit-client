@@ -791,6 +791,210 @@
       });
     });
   })();
+
+  /* ==========================================================================
+     LOCAL AUTOSAVE
+     Save every form field + signature to localStorage as the customer types,
+     restore on next page load. Survives tab-close, browser-restart, etc.
+     Storage key: zk-intake-v1 — bump the version if the schema changes.
+     ========================================================================== */
+  (function intakeAutosave(){
+    var KEY = 'zk-intake-v1';
+    var SAVED_NOTICE_MS = 1400;
+    var saveTimer = null;
+    var savedNoticeEl = null;
+
+    function form(){ return document.getElementById('intakeForm'); }
+    function canvas(){ return document.getElementById('sigCanvas'); }
+
+    function snapshot(){
+      var f = form(); if(!f) return null;
+      var data = { v: 1, savedAt: new Date().toISOString(), fields: {}, checks: {}, sigMode: 'draw', sigData: null, sigTyped: '' };
+
+      // text-like inputs + textareas
+      f.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input:not([type]), textarea').forEach(function(el){
+        if(el.name) data.fields[el.name] = el.value;
+      });
+
+      // checkboxes
+      f.querySelectorAll('input[type="checkbox"]').forEach(function(el){
+        if(el.name) data.checks[el.name] = el.checked;
+      });
+
+      // radios — store the checked one's value, keyed by group name
+      f.querySelectorAll('input[type="radio"]:checked').forEach(function(el){
+        if(el.name) data.fields[el.name] = el.value;
+      });
+
+      // signature mode tab
+      var activeTab = document.querySelector('.sig-tab.active');
+      if(activeTab) data.sigMode = activeTab.getAttribute('data-mode') || 'draw';
+
+      // typed signature
+      var typed = document.getElementById('sigTypeInput');
+      if(typed) data.sigTyped = typed.value;
+
+      // drawn signature — only persist if there's actually ink on the canvas
+      var c = canvas();
+      if(c){
+        try {
+          var ctx = c.getContext('2d');
+          var px = ctx.getImageData(0, 0, c.width, c.height).data;
+          var inked = false;
+          for(var i = 3; i < px.length; i += 4){ if(px[i] !== 0){ inked = true; break; } }
+          if(inked) data.sigData = c.toDataURL('image/png');
+        } catch(e){ /* canvas tainted or no context — skip */ }
+      }
+
+      return data;
+    }
+
+    function save(){
+      try {
+        var data = snapshot(); if(!data) return;
+        localStorage.setItem(KEY, JSON.stringify(data));
+        showSavedNotice();
+      } catch(e){
+        console.warn('[zk-intake] save failed:', e);
+      }
+    }
+
+    function debouncedSave(){
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(save, 600);
+    }
+
+    function showSavedNotice(){
+      if(!savedNoticeEl){
+        savedNoticeEl = document.createElement('div');
+        savedNoticeEl.textContent = '✓ Saved';
+        savedNoticeEl.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1e3a5f;color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-family:inherit;box-shadow:0 4px 12px rgba(0,0,0,0.18);opacity:0;transition:opacity 0.25s;z-index:9999;pointer-events:none;';
+        document.body.appendChild(savedNoticeEl);
+      }
+      savedNoticeEl.style.opacity = '1';
+      clearTimeout(savedNoticeEl._t);
+      savedNoticeEl._t = setTimeout(function(){ savedNoticeEl.style.opacity = '0'; }, SAVED_NOTICE_MS);
+    }
+
+    function restore(){
+      try {
+        var raw = localStorage.getItem(KEY);
+        if(!raw) return false;
+        var data = JSON.parse(raw);
+        if(!data || data.v !== 1) return false;
+        var f = form(); if(!f) return false;
+
+        // text + radios
+        Object.keys(data.fields || {}).forEach(function(name){
+          var radios = f.querySelectorAll('input[type="radio"][name="' + name + '"]');
+          if(radios.length){
+            radios.forEach(function(r){ r.checked = (r.value === data.fields[name]); });
+            return;
+          }
+          var el = f.querySelector('[name="' + name + '"]');
+          if(el && el.type !== 'radio' && el.type !== 'checkbox'){ el.value = data.fields[name] || ''; }
+        });
+
+        // checkboxes
+        Object.keys(data.checks || {}).forEach(function(name){
+          var cb = f.querySelector('input[type="checkbox"][name="' + name + '"]');
+          if(cb) cb.checked = !!data.checks[name];
+        });
+
+        // typed signature
+        if(data.sigTyped){
+          var typed = document.getElementById('sigTypeInput');
+          if(typed) typed.value = data.sigTyped;
+        }
+
+        // signature mode tab (do this BEFORE restoring canvas)
+        if(data.sigMode === 'type'){
+          var typeTab = document.querySelector('.sig-tab[data-mode="type"]');
+          if(typeTab) typeTab.click();
+        }
+
+        // drawn signature — wait for canvas sizing to settle
+        if(data.sigData){
+          setTimeout(function(){
+            var c = canvas(); if(!c) return;
+            var ctx = c.getContext('2d');
+            var rect = c.getBoundingClientRect();
+            var img = new Image();
+            img.onload = function(){
+              ctx.drawImage(img, 0, 0, rect.width, rect.height);
+              var ph = document.getElementById('sigPlaceholder');
+              if(ph) ph.style.display = 'none';
+            };
+            img.src = data.sigData;
+          }, 200);
+        }
+
+        // re-sync the "checked-style" highlight on option cards
+        document.querySelectorAll('.opt input').forEach(function(input){
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        return true;
+      } catch(e){
+        console.warn('[zk-intake] restore failed:', e);
+        return false;
+      }
+    }
+
+    function clearStorage(){
+      try { localStorage.removeItem(KEY); } catch(e){}
+    }
+
+    // Wire up save triggers
+    var f = form();
+    if(f){
+      f.addEventListener('input', debouncedSave);
+      f.addEventListener('change', debouncedSave);
+      // Clear Form button reset
+      f.addEventListener('reset', function(){
+        // Form values reset AFTER this event fires; defer cleanup
+        setTimeout(function(){
+          clearStorage();
+          var c = canvas();
+          if(c){
+            var ctx = c.getContext('2d');
+            ctx.clearRect(0, 0, c.width, c.height);
+          }
+          var ph = document.getElementById('sigPlaceholder');
+          if(ph) ph.style.display = '';
+          // re-sync option cards
+          document.querySelectorAll('.opt input').forEach(function(input){
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+        }, 20);
+      });
+    }
+
+    // Save after signature draw completes
+    var c = canvas();
+    if(c){
+      ['mouseup', 'touchend'].forEach(function(evt){
+        c.addEventListener(evt, debouncedSave);
+      });
+    }
+
+    // Save when signature mode tab changes
+    document.querySelectorAll('.sig-tab').forEach(function(tab){
+      tab.addEventListener('click', debouncedSave);
+    });
+
+    // Wrap window.clearSignature so the Clear button under the sig pad also saves the empty state
+    var origClear = window.clearSignature;
+    if(typeof origClear === 'function'){
+      window.clearSignature = function(){
+        origClear.apply(this, arguments);
+        debouncedSave();
+      };
+    }
+
+    // Restore on load (give the sig pad IIFE time to size the canvas)
+    setTimeout(restore, 250);
+  })();
 </script>
 </body>
 </html>
