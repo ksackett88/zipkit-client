@@ -124,6 +124,52 @@
   .info-block ol { margin: 0; padding-left: 20px; }
   .info-block li { margin: 4px 0; }
 
+  /* ---- Plans grid (Step 1: Download Standard Plans) ---- */
+  .plans-block { margin-bottom: 22px; }
+  .plans-block h3 {
+    margin: 0 0 4px;
+    font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--navy);
+  }
+  .plans-block .plans-intro { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .plan-card {
+    display: flex; flex-direction: column;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+  }
+  .plan-card:hover { border-color: var(--orange); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .plan-thumb {
+    width: 100%; height: 110px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #1e3a5f, #16263d);
+    display: block;
+  }
+  .plan-body { padding: 10px 12px 12px; }
+  .plan-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+  .plan-sqft { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .plan-download {
+    margin-top: 8px;
+    display: inline-block;
+    font-size: 12px; font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 0.3px;
+  }
+  .plan-card.barndo .plan-name::after {
+    content: ' · Barndo';
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
   /* ---- Section headers ---- */
   .section-band {
     background: var(--navy);
@@ -371,6 +417,12 @@
         <li>Furniture placement</li>
       </ul>
     </div>
+  </div>
+
+  <div class="plans-block">
+    <h3>Step 1: Download the Standard Plans</h3>
+    <p class="plans-intro">Pick the floor plan(s) closest to what you want, download the PDF, and mark them up. Note the plan name in Section 2 below.</p>
+    <div id="plansGrid" class="plans-grid"></div>
   </div>
 
   <div class="info-block">
@@ -790,6 +842,67 @@
         if(mode === 'draw') setTimeout(fitCanvas, 30);
       });
     });
+  })();
+
+  /* ==========================================================================
+     STANDARD PLANS GRID
+     Builds the "Step 1: Download Standard Plans" grid from the model list.
+     Thumbnails pulled from the public quoting-tool photos folder so we don't
+     duplicate ~10 MB of images across two repos. PDFs are expected to live in
+     plans/{slug}.pdf within this repo — drop them in as you have them ready
+     (missing PDFs will 404 silently on click).
+     ========================================================================== */
+  (function buildPlansGrid(){
+    var PHOTO_BASE = 'https://ksackett88.github.io/zipkit-quoting-tool/photos/';
+    // [name, sqft, photo-filename, pdf-slug, optional-tag]
+    var PLANS = [
+      ['Big Sky',     '640',          'bigsky.jpg',       'big-sky'],
+      ['Bridger',     '800',          'bridger.jpg',      'bridger'],
+      ['Tahoe',       '1,000',        'tahoe.jpg',        'tahoe'],
+      ['Sequoia',     '977',          'sequoia.jpg',      'sequoia'],
+      ['Frontier',    '1,044',        'frontier.jpg',     'frontier'],
+      ['Clyde',       '1,198',        'clyde1.jpg',       'clyde'],
+      ['Birch',       '1,284',        'birch1.jpg',       'birch'],
+      ['Willow',      '1,290–1,536',  'willow3.jpg',      'willow'],
+      ['Bozeman',     '1,403',        'bozeman1.jpg',     'bozeman'],
+      ['Sunstone',    '1,471',        'sunstone1.jpg',    'sunstone'],
+      ['Bluebell',    '1,536',        'bluebell2.jpg',    'bluebell'],
+      ['Shasta',      '1,590',        'shasta.jpg',       'shasta'],
+      ['Summit',      '1,793',        'summit.jpg',       'summit'],
+      ['Jasper',      '1,800',        'jasper.jpg',       'jasper'],
+      ['Mesa',        '1,823',        'mesa.jpg',         'mesa'],
+      ['Koda',        '1,864',        'koda.jpg',         'koda'],
+      ['Hayden',      '1,959',        'hayden.jpg',       'hayden'],
+      ['Cedar',       '1,989',        'cedar1.jpg',       'cedar'],
+      ['Timberline',  '2,125',        'timberline1.jpg',  'timberline'],
+      ['Apache',      '2,170',        'apache4.jpg',      'apache',  'barndo'],
+      ['Juniper',     '2,120',        'juniper.jpg',      'juniper', 'barndo'],
+      ['Zion',        '2,226',        'zion.jpg',         'zion'],
+      ['Columbia',    '2,276',        'columbia.jpg',     'columbia'],
+      ['Alpine',      '2,372',        'alpine.jpg',       'alpine'],
+      ['Moab',        '2,562',        'moab1.jpg',        'moab'],
+      ['Meadow',      '2,617',        'meadow.1.jpg',     'meadow'],
+      ['Solitude',    '2,955',        'solitude.jpg',     'solitude'],
+      ['Olympic',     '3,516',        'olympic.jpg',      'olympic']
+    ];
+
+    var grid = document.getElementById('plansGrid');
+    if(!grid) return;
+
+    var html = PLANS.map(function(p){
+      var name = p[0], sqft = p[1], img = p[2], pdf = p[3], tag = p[4];
+      var barndoClass = (tag === 'barndo') ? ' barndo' : '';
+      return '<a class="plan-card'+barndoClass+'" href="plans/'+pdf+'.pdf" download="ZipKit_'+pdf+'_plans.pdf" target="_blank" rel="noopener">'
+        + '<img class="plan-thumb" src="'+PHOTO_BASE+img+'" alt="'+name+'" loading="lazy" onerror="this.style.display=\'none\'">'
+        + '<div class="plan-body">'
+        +   '<div class="plan-name">'+name+'</div>'
+        +   '<div class="plan-sqft">'+sqft+' sqft</div>'
+        +   '<span class="plan-download">Download PDF →</span>'
+        + '</div>'
+        + '</a>';
+    }).join('');
+
+    grid.innerHTML = html;
   })();
 
   /* ==========================================================================
