@@ -368,15 +368,46 @@
     .hero { padding: 24px; }
   }
 
-  /* print */
+  /* print — shrink everything so the form is tight and page breaks land cleanly */
   @media print {
-    body { background: #fff; }
+    @page { margin: 0.4in; }
+    body { background: #fff; font-size: 11px; line-height: 1.35; }
+    .wrap { padding: 0; max-width: 100%; }
     .actions, .save-hint { display: none; }
     .plans-block { display: none !important; }
     .opt:hover, .opt { border-color: var(--line); }
-    .section-band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* tighter header */
+    .topbar { padding: 6px 0 4px; margin-bottom: 10px; }
+    .topbar .logo { height: 36px !important; }
+
+    /* tighter section bands */
+    .section-band { padding: 7px 14px; margin: 14px 0 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section-band h2 { font-size: 14px; }
+    .section-band .num { font-size: 9px; }
+    .section-desc { font-size: 10.5px; margin: -4px 0 8px; }
+
+    /* tighter question blocks + keep each block intact across page breaks */
+    .q { margin-bottom: 10px; page-break-inside: avoid; break-inside: avoid; }
+    .q > h4 { font-size: 12px; margin: 0 0 6px; padding-bottom: 3px; }
+    label.fld { margin-bottom: 6px; }
+    label.fld .lbl { font-size: 10.5px; }
+
+    /* "What to Do" info block */
+    .info-block { padding: 10px 14px; margin: 10px 0; }
+    .info-block h3 { font-size: 13px; margin: 0 0 4px; }
+    .info-block ol, .info-block ul { margin: 4px 0; padding-left: 18px; }
+    .info-block li { margin-bottom: 2px; }
+
+    /* signature pad — shrink, hide draw/type toggle + clear button, keep the whole sig block together */
     .sig-toggle, .sig-clear { display: none !important; }
     .sig-canvas { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sig-pad-wrap, .sig-type-wrap { height: 90px; }
+    .sig-grid { gap: 18px; margin-top: 14px; page-break-inside: avoid; break-inside: avoid; }
+    .sig-line { font-size: 10.5px; padding-top: 4px; }
+
+    /* avoid dangling heading at the bottom of a page */
+    h2, h3, h4 { page-break-after: avoid; break-after: avoid-page; }
   }
 </style>
 </head>
