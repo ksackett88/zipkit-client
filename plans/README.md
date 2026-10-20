@@ -20,8 +20,8 @@ willow.pdf
 bozeman.pdf
 sunstone.pdf
 bluebell.pdf
-shasta.pdf
-summit.pdf
+oakley.pdf
+ozark.pdf
 jasper.pdf
 mesa.pdf
 koda.pdf
@@ -35,7 +35,7 @@ columbia.pdf
 alpine.pdf
 moab.pdf
 meadow.pdf
-solitude.pdf
+kolob.pdf
 olympic.pdf
 ```
 
